@@ -13,6 +13,7 @@ class _SecondScreenState extends State<SecondScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.lightBlue,
         title: Text("Second Screen", style: TextStyle(
           fontSize: 12,
         ),),
