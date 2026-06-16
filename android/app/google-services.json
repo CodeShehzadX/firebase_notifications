@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "823622429952",
+    "project_id": "test-2-notif",
+    "storage_bucket": "test-2-notif.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:823622429952:android:bdaf51420866c43c3f57e5",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_2_test"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBq2FmWW6shRn7fpfmlsKGxPd1IIOLub6g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
