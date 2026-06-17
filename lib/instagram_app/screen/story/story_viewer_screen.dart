@@ -24,10 +24,13 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
   void initState() {
     super.initState();
     user = Get.arguments as UserModel;
-    // Mark the story as viewed so its ring turns grey on the home feed.
-    if (Get.isRegistered<HomeController>()) {
-      Get.find<HomeController>().markStoryViewed(user.id);
-    }
+    // Mark the story as viewed after this frame so we don't mutate the
+    // home feed's observed state during the build phase.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (Get.isRegistered<HomeController>()) {
+        Get.find<HomeController>().markStoryViewed(user.id);
+      }
+    });
     _progress = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 5),

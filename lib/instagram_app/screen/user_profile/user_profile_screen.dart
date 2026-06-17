@@ -44,9 +44,7 @@ class UserProfileScreen extends StatelessWidget {
         ],
       ),
       body: Obx(() {
-        // Touch reactive values so follow + tab changes rebuild the view.
         final bool following = controller.isFollowing.value;
-        controller.followers.value;
         return ProfileView(
           user: controller.user,
           posts: controller.posts,

@@ -38,14 +38,14 @@ class ShareSheet extends StatelessWidget {
             ),
             const Divider(height: 16, color: AppColors.divider),
             Expanded(
-              child: Obx(
-                () => ListView.builder(
-                  controller: scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  itemCount: controller.users.length,
-                  itemBuilder: (context, index) =>
-                      _userTile(controller, controller.users[index]),
-                ),
+              // The user list is static; only each row's selection is
+              // reactive (handled by the Obx inside _userTile).
+              child: ListView.builder(
+                controller: scrollController,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                itemCount: controller.users.length,
+                itemBuilder: (context, index) =>
+                    _userTile(controller, controller.users[index]),
               ),
             ),
             _sendBar(controller),

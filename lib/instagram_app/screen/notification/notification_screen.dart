@@ -40,8 +40,6 @@ class NotificationScreen extends StatelessWidget {
         ),
       ),
       body: Obx(() {
-        // Touch the reactive list so Obx rebuilds on follow toggles.
-        controller.notifications.length;
         return ListView(
           padding: const EdgeInsets.only(top: 4),
           children: [
