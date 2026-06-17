@@ -2,8 +2,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_application_2_test/second_screen.dart';
-import 'package:flutter_application_2_test/main.dart'; 
+import 'package:flutter_application_2_test/firebase/second_screen.dart';
+import 'package:flutter_application_2_test/firebase/main.dart'; 
 
 class NotificartionService {
   FirebaseMessaging messaging = FirebaseMessaging.instance;

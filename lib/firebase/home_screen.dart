@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2_test/notificartion_service.dart';
+import 'package:flutter_application_2_test/firebase/notificartion_service.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
