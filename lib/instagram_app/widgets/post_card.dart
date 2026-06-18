@@ -169,7 +169,7 @@ class _PostCardState extends State<PostCard>
           ),
           IconButton(
             onPressed: widget.onMore,
-            icon: const SvgIcon(AppAssets.more, size: 20),
+            icon: const SvgIcon(AppAssets.moreVert, size: 20),
           ),
         ],
       ),

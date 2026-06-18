@@ -5,9 +5,12 @@ import '../../models/post_model.dart';
 import '../../models/user_model.dart';
 import '../../services/dummy_data_service.dart';
 
+/// Shares either a [post] or a [profile] to selected users.
 class ShareController extends GetxController {
-  final PostModel post;
-  ShareController(this.post);
+  final PostModel? post;
+  final UserModel? profile;
+
+  ShareController({this.post, this.profile});
 
   final DummyDataService _data = Get.find<DummyDataService>();
 
@@ -15,6 +18,8 @@ class ShareController extends GetxController {
   final RxSet<int> selected = <int>{}.obs;
 
   List<UserModel> get users => _data.users;
+
+  String get title => profile != null ? 'Share profile' : 'Share';
 
   bool isSelected(UserModel user) => selected.contains(user.id);
 
@@ -29,11 +34,15 @@ class ShareController extends GetxController {
   void send() {
     final targets = users.where((u) => selected.contains(u.id)).toList();
     if (targets.isEmpty) return;
-    _data.sharePostToUsers(post, targets);
+    if (post != null) {
+      _data.sharePostToUsers(post!, targets);
+    } else if (profile != null) {
+      _data.shareProfileToUsers(profile!, targets);
+    }
     Get.back();
     Get.snackbar(
       'Sent',
-      'Post sent to ${targets.length} ${targets.length == 1 ? 'person' : 'people'}',
+      'Sent to ${targets.length} ${targets.length == 1 ? 'person' : 'people'}',
       snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(12),
       duration: const Duration(seconds: 2),

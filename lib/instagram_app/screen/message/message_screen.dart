@@ -26,12 +26,14 @@ class MessageScreen extends StatelessWidget {
         titleSpacing: 16,
         title: Row(
           children: [
-            Text(
-              controller.me.username,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppColors.black,
+            Obx(
+              () => Text(
+                controller.username.value,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.black,
+                ),
               ),
             ),
             const SizedBox(width: 4),
@@ -55,7 +57,7 @@ class MessageScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 4),
                 itemCount: controller.messages.length,
                 itemBuilder: (context, index) =>
-                    _tile(controller.messages[index]),
+                    _tile(controller, controller.messages[index]),
               ),
             ),
           ),
@@ -105,7 +107,7 @@ class MessageScreen extends StatelessWidget {
     );
   }
 
-  Widget _tile(MessageModel message) {
+  Widget _tile(MessageController controller, MessageModel message) {
     final bool unread = message.unread > 0;
     return GestureDetector(
       onTap: () => Get.toNamed(AppRoutes.chat, arguments: message),
@@ -182,7 +184,13 @@ class MessageScreen extends StatelessWidget {
                 ),
               )
             else
-              const SvgIcon(AppAssets.camera, size: 24, color: AppColors.grey),
+              IconButton(
+                onPressed: () => controller.sendPhotoToChat(message),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const SvgIcon(AppAssets.camera,
+                    size: 24, color: AppColors.grey),
+              ),
           ],
         ),
       ),

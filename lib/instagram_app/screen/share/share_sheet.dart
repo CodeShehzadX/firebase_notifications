@@ -32,9 +32,9 @@ class ShareSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            const Text(
-              'Share',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+            Text(
+              controller.title,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
             ),
             const Divider(height: 16, color: AppColors.divider),
             Expanded(

@@ -2,8 +2,10 @@ import 'package:get/get.dart';
 
 import '../screen/chat/chat_detail_screen.dart';
 import '../screen/create_post/create_post_screen.dart';
+import '../screen/edit_profile/edit_profile_screen.dart';
 import '../screen/main/main_screen.dart';
 import '../screen/notification/notification_screen.dart';
+import '../screen/post_detail/post_detail_screen.dart';
 import '../screen/story/story_viewer_screen.dart';
 import '../screen/user_profile/user_profile_screen.dart';
 import 'app_bindings.dart';
@@ -46,7 +48,20 @@ class AppPages {
     GetPage(
       name: AppRoutes.story,
       page: () => const StoryViewerScreen(),
+      binding: StoryBinding(),
       transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.postDetail,
+      page: () => const PostDetailScreen(),
+      binding: PostDetailBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.editProfile,
+      page: () => const EditProfileScreen(),
+      binding: EditProfileBinding(),
+      transition: Transition.rightToLeft,
     ),
   ];
 }

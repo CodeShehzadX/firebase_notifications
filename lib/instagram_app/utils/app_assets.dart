@@ -20,6 +20,7 @@ class AppAssets {
   static const String profile = '$_icons/profile.svg';
   static const String profileFill = '$_icons/profile_fill.svg';
   static const String more = '$_icons/more.svg';
+  static const String moreVert = '$_icons/more_vert.svg';
   static const String grid = '$_icons/grid.svg';
   static const String tag = '$_icons/tag.svg';
   static const String back = '$_icons/back.svg';

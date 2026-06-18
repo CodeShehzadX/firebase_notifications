@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../models/user_model.dart';
+import '../../models/story_model.dart';
 import '../../routes/app_routes.dart';
 import '../../utils/app_assets.dart';
 import '../../utils/app_colors.dart';
@@ -73,34 +73,33 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _storiesBar(HomeController controller) {
-    final stories = controller.stories;
     return Container(
       height: 116,
       decoration: const BoxDecoration(
         border: Border(bottom: BorderSide(color: AppColors.divider)),
       ),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        itemCount: stories.length + 1,
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return _storyItem(controller, controller.me, isMine: true);
-          }
-          return _storyItem(controller, stories[index - 1]);
-        },
-      ),
+      child: Obx(() {
+        final others = controller.otherStories;
+        final bool hasMine = controller.myStory.value != null;
+        final int offset = hasMine ? 1 : 0;
+        return ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          itemCount: others.length + 1,
+          itemBuilder: (context, index) {
+            if (index == 0) return _yourStory(controller, hasMine);
+            final story = others[index - 1];
+            return _otherStory(controller, story, offset + index - 1);
+          },
+        );
+      }),
     );
   }
 
-  Widget _storyItem(
-    HomeController controller,
-    UserModel user, {
-    bool isMine = false,
-  }) {
-    final bool viewed = controller.isStoryViewed(user.id);
+  Widget _yourStory(HomeController controller, bool hasMine) {
     return GestureDetector(
-      onTap: () => controller.openStory(user),
+      onTap: () =>
+          hasMine ? controller.openStoryAt(0) : controller.addStory(),
       behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -110,15 +109,16 @@ class HomeScreen extends StatelessWidget {
             Stack(
               children: [
                 UserAvatar(
-                  imageUrl: user.avatarUrl,
+                  imageUrl: controller.me.avatarUrl,
                   size: 64,
-                  hasStoryRing: !isMine,
-                  viewed: viewed,
+                  hasStoryRing: hasMine,
+                  viewed: controller.isStoryViewed(controller.me.id),
                 ),
-                if (isMine)
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: GestureDetector(
+                    onTap: controller.addStory,
                     child: Container(
                       decoration: BoxDecoration(
                         color: AppColors.primary,
@@ -129,13 +129,50 @@ class HomeScreen extends StatelessWidget {
                           size: 16, color: AppColors.white),
                     ),
                   ),
+                ),
               ],
+            ),
+            const SizedBox(height: 4),
+            const SizedBox(
+              width: 70,
+              child: Text(
+                AppStrings.yourStory,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _otherStory(
+    HomeController controller,
+    StoryModel story,
+    int viewerIndex,
+  ) {
+    return GestureDetector(
+      onTap: () => controller.openStoryAt(viewerIndex),
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            UserAvatar(
+              imageUrl: story.user.avatarUrl,
+              size: 64,
+              hasStoryRing: true,
+              viewed: controller.isStoryViewed(story.user.id),
             ),
             const SizedBox(height: 4),
             SizedBox(
               width: 70,
               child: Text(
-                isMine ? AppStrings.yourStory : user.username,
+                story.user.username,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,

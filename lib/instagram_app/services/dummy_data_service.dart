@@ -5,6 +5,7 @@ import '../models/comment_model.dart';
 import '../models/message_model.dart';
 import '../models/notification_model.dart';
 import '../models/post_model.dart';
+import '../models/story_model.dart';
 import '../models/user_model.dart';
 
 /// Provides all dummy/seed data for the demo app.
@@ -16,15 +17,29 @@ class DummyDataService extends GetxService {
   late final List<UserModel> users;
   late final List<PostModel> feedPosts;
   late final List<PostModel> myPosts;
-  late final List<NotificationModel> notifications;
   late final List<UserModel> suggestions;
 
-  /// Reactive so the messages screen updates when a post is shared or a photo
-  /// is captured.
+  /// Reactive lists so screens update when data changes at runtime.
+  final RxList<NotificationModel> notifications = <NotificationModel>[].obs;
   final RxList<MessageModel> messages = <MessageModel>[].obs;
+  final RxList<StoryModel> stories = <StoryModel>[].obs;
+
+  /// The current user's own (most recent) added story.
+  final Rxn<StoryModel> myStory = Rxn<StoryModel>();
+
+  /// Reels reuse PostModel so they share the post action flows.
+  final List<PostModel> reels = [];
 
   /// Posts the current user has reposted (shown on the profile repost tab).
   final List<PostModel> myReposts = [];
+
+  /// Per-conversation chat threads, lazily created.
+  final Map<int, RxList<ChatMessageModel>> _chatThreads = {};
+
+  /// Reactive mirrors of the current user's editable profile fields.
+  final RxString meName = ''.obs;
+  final RxString meUsername = ''.obs;
+  final RxString meBio = ''.obs;
 
   static String _avatar(int n) => 'https://i.pravatar.cc/300?img=$n';
   static String _photo(String seed) =>
@@ -37,12 +52,16 @@ class DummyDataService extends GetxService {
   }
 
   void _seed() {
+    meName.value = 'Alex Carter';
+    meUsername.value = 'alex.dev';
+    meBio.value =
+        '📱 Flutter Developer\n🚀 Building beautiful apps\n📍 San Francisco, CA';
     currentUser = UserModel(
       id: 0,
-      username: 'alex.dev',
-      fullName: 'Alex Carter',
+      username: meUsername.value,
+      fullName: meName.value,
       avatarUrl: _avatar(12),
-      bio: '📱 Flutter Developer\n🚀 Building beautiful apps\n📍 San Francisco, CA',
+      bio: meBio.value,
       isMe: true,
       posts: 9,
       followers: 1240,
@@ -194,7 +213,7 @@ class DummyDataService extends GetxService {
       ),
     );
 
-    notifications = [
+    notifications.addAll([
       NotificationModel(
         id: 301,
         user: sara,
@@ -258,7 +277,7 @@ class DummyDataService extends GetxService {
         section: NotificationSection.earlier,
         postImageUrl: _photo('mypost5'),
       ),
-    ];
+    ]);
 
     messages.addAll([
       MessageModel(
@@ -307,6 +326,7 @@ class DummyDataService extends GetxService {
     suggestions = [sara, emma, lisa];
 
     _seedComments();
+    _seedStoriesAndReels();
   }
 
   /// Attaches a few dummy comments to each feed post.
@@ -426,6 +446,189 @@ class DummyDataService extends GetxService {
         likes: 50 + i * 23,
         comments: 3 + i * 2,
       ),
+    );
+  }
+
+  // --- Stories ---------------------------------------------------------------
+
+  /// Ordered stories for the viewer: the current user's story (if any) first.
+  List<StoryModel> get orderedStories => [
+        if (myStory.value != null) myStory.value!,
+        ...stories,
+      ];
+
+  /// Sets the current user's story and surfaces it in the story row.
+  void addStory(StoryModel story) => myStory.value = story;
+
+  /// Records a story reply as a DM + an activity notification.
+  void addStoryReply(UserModel storyUser, String text) {
+    messages.removeWhere((m) => m.user.id == storyUser.id);
+    messages.insert(
+      0,
+      MessageModel(
+        id: 82000 + storyUser.id,
+        user: storyUser,
+        lastMessage: 'Replied to their story: $text',
+        timeAgo: 'now',
+        sentByMe: true,
+      ),
+    );
+    notifications.insert(
+      0,
+      NotificationModel(
+        id: 90000 + storyUser.id,
+        user: storyUser,
+        type: NotificationType.comment,
+        text: 'Story reply sent: "$text"',
+        timeAgo: 'now',
+        section: NotificationSection.today,
+      ),
+    );
+  }
+
+  // --- Chat threads ----------------------------------------------------------
+
+  /// The persistent message thread for a conversation, created on first use.
+  RxList<ChatMessageModel> threadFor(int convId) =>
+      _chatThreads.putIfAbsent(
+          convId, () => RxList<ChatMessageModel>.from(chatThread()));
+
+  void _appendChatMessage(int convId, ChatMessageModel message, String preview) {
+    threadFor(convId).add(message);
+    final idx = messages.indexWhere((m) => m.id == convId);
+    if (idx != -1) {
+      final conv = messages[idx];
+      messages.removeAt(idx);
+      messages.insert(
+        0,
+        MessageModel(
+          id: conv.id,
+          user: conv.user,
+          lastMessage: preview,
+          timeAgo: 'now',
+          sentByMe: true,
+          isOnline: conv.isOnline,
+        ),
+      );
+    }
+  }
+
+  void sendTextToChat(int convId, String text) {
+    _appendChatMessage(
+      convId,
+      ChatMessageModel(
+        id: threadFor(convId).length + 700,
+        text: text,
+        isSent: true,
+        time: 'now',
+      ),
+      text,
+    );
+  }
+
+  void sendImageToChat(int convId, String path) {
+    _appendChatMessage(
+      convId,
+      ChatMessageModel(
+        id: threadFor(convId).length + 700,
+        text: '',
+        isSent: true,
+        time: 'now',
+        imagePath: path,
+      ),
+      '📷 Photo',
+    );
+  }
+
+  // --- Profile ---------------------------------------------------------------
+
+  /// Updates the current user's editable profile fields reactively.
+  void updateProfile({
+    required String name,
+    required String username,
+    required String bio,
+  }) {
+    meName.value = name;
+    meUsername.value = username;
+    meBio.value = bio;
+    currentUser.fullName = name;
+    currentUser.username = username;
+    currentUser.bio = bio;
+  }
+
+  /// Shares a profile to the given users (updates the messages list).
+  void shareProfileToUsers(UserModel profile, List<UserModel> targets) {
+    for (final user in targets) {
+      messages.removeWhere((m) => m.user.id == user.id);
+      messages.insert(
+        0,
+        MessageModel(
+          id: 81000 + user.id,
+          user: user,
+          lastMessage: 'Shared @${profile.username}\'s profile',
+          timeAgo: 'now',
+          sentByMe: true,
+        ),
+      );
+    }
+  }
+
+  // --- Seeding ---------------------------------------------------------------
+
+  static String _reelPhoto(String seed) =>
+      'https://picsum.photos/seed/$seed/720/1280';
+
+  void _seedStoriesAndReels() {
+    stories.addAll([
+      for (final u in suggestions)
+        StoryModel(
+          id: 600 + u.id,
+          user: u,
+          type: StoryType.image,
+          imageUrl: _reelPhoto('story_${u.id}'),
+        ),
+    ]);
+
+    reels.addAll([
+      _reel(900, users[5], 'reel1', 'Chasing sunsets 🌅 #travel',
+          'Original audio • Lisa Ray', 12400, 340),
+      _reel(901, users[3], 'reel2', 'Latte art therapy ☕️',
+          'Aesthetic vibes • trending', 8900, 210),
+      _reel(902, users[2], 'reel3', 'Coding time-lapse 💻 #devlife',
+          'lofi beats • chillhop', 5400, 120),
+      _reel(903, users[1], 'reel4', '60-second pasta 🍝',
+          'Cooking sounds • Sara', 23100, 540),
+      _reel(904, users[0], 'reel5', 'Mountain trail run 🏔️',
+          'Adventure mix • John', 15200, 410),
+    ]);
+
+    for (final reel in reels) {
+      for (int c = 0; c < 2; c++) {
+        reel.commentList.add(
+          CommentModel(
+            id: reel.id * 10 + c,
+            user: users[c % users.length],
+            text: c == 0 ? 'This is fire 🔥' : 'Saved! 🙌',
+            timeAgo: '${c + 1}h',
+            likes: (c + 1) * 6,
+          ),
+        );
+      }
+    }
+  }
+
+  PostModel _reel(int id, UserModel author, String seed, String caption,
+      String music, int likes, int comments) {
+    return PostModel(
+      id: id,
+      author: author,
+      type: PostType.image,
+      imageUrl: _reelPhoto(seed),
+      caption: caption,
+      music: music,
+      timeAgo: '1d',
+      likes: likes,
+      comments: comments,
     );
   }
 }

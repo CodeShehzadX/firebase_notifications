@@ -2,12 +2,16 @@ import 'package:get/get.dart';
 
 import '../screen/chat/chat_controller.dart';
 import '../screen/create_post/create_post_controller.dart';
+import '../screen/edit_profile/edit_profile_controller.dart';
 import '../screen/home/home_controller.dart';
 import '../screen/main/main_controller.dart';
 import '../screen/message/message_controller.dart';
 import '../screen/notification/notification_controller.dart';
+import '../screen/post_detail/post_detail_controller.dart';
 import '../screen/profile/profile_controller.dart';
+import '../screen/reels/reels_controller.dart';
 import '../screen/search/search_controller.dart';
+import '../screen/story/story_controller.dart';
 import '../screen/user_profile/user_profile_controller.dart';
 import '../services/dummy_data_service.dart';
 
@@ -25,6 +29,7 @@ class MainBinding extends Bindings {
   void dependencies() {
     Get.lazyPut<MainController>(() => MainController());
     Get.lazyPut<HomeController>(() => HomeController());
+    Get.lazyPut<ReelsController>(() => ReelsController());
     Get.lazyPut<MessageController>(() => MessageController());
     Get.lazyPut<SearchPageController>(() => SearchPageController());
     Get.lazyPut<ProfileController>(() => ProfileController());
@@ -56,5 +61,26 @@ class UserProfileBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<UserProfileController>(() => UserProfileController());
+  }
+}
+
+class PostDetailBinding extends Bindings {
+  @override
+  void dependencies() {
+    Get.lazyPut<PostDetailController>(() => PostDetailController());
+  }
+}
+
+class EditProfileBinding extends Bindings {
+  @override
+  void dependencies() {
+    Get.lazyPut<EditProfileController>(() => EditProfileController());
+  }
+}
+
+class StoryBinding extends Bindings {
+  @override
+  void dependencies() {
+    Get.lazyPut<StoryController>(() => StoryController());
   }
 }

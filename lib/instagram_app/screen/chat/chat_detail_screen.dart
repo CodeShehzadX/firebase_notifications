@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -76,7 +78,7 @@ class ChatDetailScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: controller.sendPhoto,
             icon: const SvgIcon(AppAssets.camera, size: 24),
           ),
           const SizedBox(width: 8),
@@ -102,6 +104,31 @@ class ChatDetailScreen extends StatelessWidget {
 
   Widget _bubble(ChatMessageModel message) {
     final bool sent = message.isSent;
+
+    if (message.isImage) {
+      return Align(
+        alignment: sent ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 3),
+          constraints: BoxConstraints(maxWidth: Get.width * 0.6),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Image.file(
+              File(message.imagePath!),
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                width: 180,
+                height: 220,
+                color: AppColors.softGrey,
+                alignment: Alignment.center,
+                child: const Icon(Icons.image, color: AppColors.grey),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Align(
       alignment: sent ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(

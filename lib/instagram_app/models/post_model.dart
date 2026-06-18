@@ -4,6 +4,8 @@ import 'user_model.dart';
 enum PostType { image, text }
 
 /// A single feed post. Can be an image post or a text-only post.
+/// Reels reuse this model (with [music] set) so they share the same
+/// like / comment / share / repost flows.
 class PostModel {
   final int id;
   final UserModel author;
@@ -15,6 +17,9 @@ class PostModel {
 
   /// Background color (ARGB int) used to render text-only posts.
   final int textBgColor;
+
+  /// Music/audio label shown on reels (empty for normal posts).
+  final String music;
 
   /// Actual comments shown in the comments sheet.
   final List<CommentModel> commentList;
@@ -35,6 +40,7 @@ class PostModel {
     this.location = '',
     this.timeAgo = '',
     this.textBgColor = 0xFF262626,
+    this.music = '',
     this.likes = 0,
     this.comments = 0,
     this.isLiked = false,

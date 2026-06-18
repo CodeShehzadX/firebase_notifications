@@ -47,6 +47,8 @@ class UserProfileScreen extends StatelessWidget {
         final bool following = controller.isFollowing.value;
         return ProfileView(
           user: controller.user,
+          name: controller.user.fullName,
+          bio: controller.user.bio,
           posts: controller.posts,
           repostedPosts: controller.repostedPosts,
           selectedTab: controller.selectedTab.value,

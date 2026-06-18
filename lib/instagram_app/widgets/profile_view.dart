@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../models/post_model.dart';
 import '../models/user_model.dart';
+import '../routes/app_routes.dart';
 import '../utils/app_assets.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_strings.dart';
@@ -15,6 +17,11 @@ import 'user_avatar.dart';
 /// or a Follow/Following button.
 class ProfileView extends StatelessWidget {
   final UserModel user;
+
+  /// Display name + bio passed explicitly so the current-user profile can feed
+  /// reactive (Rx-backed) values while other profiles pass static ones.
+  final String name;
+  final String bio;
   final List<PostModel> posts;
   final List<PostModel> repostedPosts;
   final int selectedTab;
@@ -24,6 +31,8 @@ class ProfileView extends StatelessWidget {
   const ProfileView({
     super.key,
     required this.user,
+    required this.name,
+    required this.bio,
     required this.posts,
     required this.repostedPosts,
     required this.selectedTab,
@@ -79,12 +88,12 @@ class ProfileView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            user.fullName,
+            name,
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
           ),
-          if (user.bio.isNotEmpty) ...[
+          if (bio.isNotEmpty) ...[
             const SizedBox(height: 2),
-            Text(user.bio, style: const TextStyle(fontSize: 13, height: 1.35)),
+            Text(bio, style: const TextStyle(fontSize: 13, height: 1.35)),
           ],
         ],
       ),
@@ -165,13 +174,19 @@ class ProfileView extends StatelessWidget {
         crossAxisSpacing: 2,
       ),
       itemCount: items.length,
-      itemBuilder: (context, index) => CachedNetworkImage(
-        imageUrl: items[index].imageUrl!,
-        fit: BoxFit.cover,
-        placeholder: (_, __) => const ColoredBox(color: AppColors.softGrey),
-        errorWidget: (_, __, ___) =>
-            const ColoredBox(color: AppColors.softGrey),
-      ),
+      itemBuilder: (context, index) {
+        final post = items[index];
+        return GestureDetector(
+          onTap: () => Get.toNamed(AppRoutes.postDetail, arguments: post),
+          child: CachedNetworkImage(
+            imageUrl: post.imageUrl!,
+            fit: BoxFit.cover,
+            placeholder: (_, __) => const ColoredBox(color: AppColors.softGrey),
+            errorWidget: (_, __, ___) =>
+                const ColoredBox(color: AppColors.softGrey),
+          ),
+        );
+      },
     );
   }
 }

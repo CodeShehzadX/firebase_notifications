@@ -1,11 +1,13 @@
 /// Represents an Instagram user (dummy data only).
 class UserModel {
   final int id;
-  final String username;
-  final String fullName;
   final String avatarUrl;
-  final String bio;
   final bool isMe;
+
+  // Editable via Edit Profile -> mutable.
+  String username;
+  String fullName;
+  String bio;
 
   // Mutable so the demo can react to follow/like actions.
   int posts;

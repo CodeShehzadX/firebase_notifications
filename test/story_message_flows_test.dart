@@ -6,31 +6,36 @@ import 'package:flutter_application_2_test/instagram_app/routes/app_routes.dart'
 import 'package:flutter_application_2_test/instagram_app/screen/chat/chat_controller.dart';
 import 'package:flutter_application_2_test/instagram_app/screen/home/home_controller.dart';
 import 'package:flutter_application_2_test/instagram_app/screen/share/share_controller.dart';
+import 'package:flutter_application_2_test/instagram_app/screen/story/story_controller.dart';
 import 'package:flutter_application_2_test/instagram_app/services/dummy_data_service.dart';
 
 void main() {
-  testWidgets('opening every story works and marks it viewed (grey ring)',
+  testWidgets('story viewer opens and next() marks each user viewed',
       (tester) async {
     await tester.pumpWidget(const InstagramApp());
     await tester.pump();
     final data = Get.find<DummyDataService>();
     final home = Get.find<HomeController>();
+    final ordered = data.orderedStories;
 
-    for (final user in [data.currentUser, ...data.suggestions]) {
-      Get.toNamed(AppRoutes.story, arguments: user);
-      await tester.pump(); // build story screen + run post-frame callback
-      await tester.pump(const Duration(milliseconds: 50));
+    Get.toNamed(AppRoutes.story, arguments: 0);
+    await tester.pump(); // build + post-frame markViewed
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(tester.takeException(), isNull, reason: 'opening story threw');
 
-      expect(tester.takeException(), isNull,
-          reason: 'opening story for ${user.username} threw');
-      // Viewed state recorded -> the home ring renders grey.
-      expect(home.isStoryViewed(user.id), isTrue,
-          reason: '${user.username} not marked viewed');
-
-      Get.back();
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+    final story = Get.find<StoryController>();
+    for (int i = 0; i < ordered.length; i++) {
+      expect(home.isStoryViewed(ordered[i].user.id), isTrue,
+          reason: 'story $i user not marked viewed');
+      if (i < ordered.length - 1) {
+        story.next();
+        await tester.pump();
+      }
     }
+
+    Get.back();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
   });
 
   testWidgets('sending a chat message works without error', (tester) async {
@@ -63,7 +68,6 @@ void main() {
     home.openShare(data.feedPosts.first);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
-    // The share sheet must build without "improper use of a GetX".
     expect(tester.takeException(), isNull, reason: 'opening share sheet threw');
 
     final share = Get.find<ShareController>();
@@ -71,13 +75,11 @@ void main() {
     share.toggle(target);
     share.send();
 
-    // Drain the success snackbar's timer/animation.
     for (int i = 0; i < 4; i++) {
       await tester.pump(const Duration(seconds: 1));
     }
 
     expect(tester.takeException(), isNull, reason: 'share send threw');
-    // The shared conversation jumped to the top of the messages list.
     expect(data.messages.first.user.id, target.id);
   });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../models/chat_message_model.dart';
 import '../../models/message_model.dart';
@@ -8,6 +9,7 @@ import '../../services/dummy_data_service.dart';
 
 class ChatController extends GetxController {
   final DummyDataService _data = Get.find<DummyDataService>();
+  final ImagePicker _picker = ImagePicker();
 
   /// The conversation passed in via Get.toNamed(arguments: ...).
   final MessageModel conversation = Get.arguments as MessageModel;
@@ -20,21 +22,22 @@ class ChatController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    messages = _data.chatThread().obs;
+    // Persistent, per-conversation thread.
+    messages = _data.threadFor(conversation.id);
   }
 
   void send() {
     final text = input.text.trim();
     if (text.isEmpty) return;
-    messages.add(
-      ChatMessageModel(
-        id: messages.length + 600,
-        text: text,
-        isSent: true,
-        time: 'now',
-      ),
-    );
+    _data.sendTextToChat(conversation.id, text);
     input.clear();
+  }
+
+  /// Opens the camera and sends the captured photo to this conversation.
+  Future<void> sendPhoto() async {
+    final XFile? shot = await _picker.pickImage(source: ImageSource.camera);
+    if (shot == null) return;
+    _data.sendImageToChat(conversation.id, shot.path);
   }
 
   @override

@@ -17,6 +17,7 @@ class MessageController extends GetxController {
   final RxString query = ''.obs;
 
   UserModel get me => _data.currentUser;
+  RxString get username => _data.meUsername;
 
   /// Conversations filtered by the current search query.
   List<MessageModel> get messages {
@@ -35,6 +36,20 @@ class MessageController extends GetxController {
   void clearSearch() {
     searchInput.clear();
     query.value = '';
+  }
+
+  /// Opens the camera and sends the captured photo to a specific conversation.
+  Future<void> sendPhotoToChat(MessageModel message) async {
+    final XFile? shot = await _picker.pickImage(source: ImageSource.camera);
+    if (shot == null) return;
+    _data.sendImageToChat(message.id, shot.path);
+    Get.snackbar(
+      'Sent',
+      'Photo sent to ${message.user.username}',
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(12),
+      duration: const Duration(seconds: 2),
+    );
   }
 
   /// Opens the device camera and, if a photo is captured, previews it and

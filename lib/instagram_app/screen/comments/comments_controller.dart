@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import '../../models/comment_model.dart';
 import '../../models/post_model.dart';
 import '../../services/dummy_data_service.dart';
-import '../home/home_controller.dart';
 
 class CommentsController extends GetxController {
   final PostModel post;
@@ -34,10 +33,8 @@ class CommentsController extends GetxController {
     post.commentList.insert(0, comment);
     post.comments += 1;
     input.clear();
-    // Keep the feed's "View all comments" count in sync.
-    if (Get.isRegistered<HomeController>()) {
-      Get.find<HomeController>().posts.refresh();
-    }
+    // The host controller refreshes its own surface when the sheet closes
+    // (see PostActionsMixin.openComments).
   }
 
   void toggleLike(CommentModel comment) {
